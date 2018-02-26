@@ -5,6 +5,7 @@
   "main": "server.js",
   "author": "",
   "dependencies": {
+    "body-parser": "^1.18.2",
     "cheerio": "latest",
     "express": "latest",
     "morgan": "^1.9.0",

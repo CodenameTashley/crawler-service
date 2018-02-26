@@ -1,48 +1,41 @@
-var express = require('express');
-var fs = require('fs');
-var request = require('request');
-var cheerio = require('cheerio');
-var logger = require('morgan');
+var bodyParser = require('body-parser'),
+    cheerio = require('cheerio'),
+    express = require('express'),
+    fs = require('fs'),
+    logger = require('morgan'),
+    request = require('request');
+
 var app = express();
+app.use(bodyParser.json());
+app.use(logger('dev'));
 
-app.get('/scrape', function (req, res) {
-
-    //All the web scraping magic will happen here
+app.get('/logByDate', function (req, res) {
 
     url = 'http://127.0.0.1/projects/logs/slave1.log';
 
-    // The structure of our request call
-    // The first parameter is our URL
-    // The callback function takes 3 parameters, an error, response status code and the html
-
     request(url, function (error, response, html) {
 
-        // First we'll check to make sure no errors occurred when making the request
-
-        /* if (!error) {
-            // Next, we'll utilize the cheerio library on the returned html which will essentially give us jQuery functionality
-
-            var $ = cheerio.load(html);
-
-            // Finally, we'll define the variables we're going to capture
-
-            var title, release, rating;
-            var json = {
-                title: "",
-                release: "",
-                rating: ""
-            };
-        } */
-        console.log(typeof html);
         var date = "2018-02-17";
 
-        var n = html.indexOf(date);
-        var r = html.substring(n, html.length - 1);
+        var startingPositionOfDate = html.indexOf(date);
+        if (startingPositionOfDate === -1) {
+            return res.status(404).send("Not found");
+        }
+        
+        var logsAsFromDate = html.substring(startingPositionOfDate, html.length - 1);
+
+        var logsOfDate = logsAsFromDate.split("\n").filter(function (log) {
+            return log.indexOf(date) !== -1 ;
+        }).join("\n");
+
+        var logsOfWrite = logsOfDate.split("\n").filter(function (log) {
+            return log.indexOf("HDFS_WRITE") !== -1;
+        }).join("<br/>");
 
         if (error) {
             res.status(500).send(error)
         } else {
-            res.status(200).send(r)
+            res.status(200).send(logsOfWrite)
         }
     });
 
