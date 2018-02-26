@@ -1,0 +1,13 @@
+{
+  "name": "node-web-scrape",
+  "version": "0.0.1",
+  "description": "Scrape le web.",
+  "main": "server.js",
+  "author": "",
+  "dependencies": {
+    "cheerio": "latest",
+    "express": "latest",
+    "morgan": "^1.9.0",
+    "request": "latest"
+  }
+}
