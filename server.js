@@ -19,18 +19,29 @@ app.get('/slaves', function (req, res) {
     res.status(200).send(config.slaves);
 });
 
-app.get('/logByDate', function (req, res) {
+app.get('/logByDateAndSlave', function (req, res) {
     console.log("req.query", req.query);
 
-    url = 'http://127.0.0.1/projects/logs/slave1.log';
+    var url = 'http://127.0.0.1/projects/logs/slave1.log';
+
+    var req_slave = JSON.parse(req.query.slave) || {};
+    if (req_slave.url && req.query.slave.url != "" ) {
+        url = req_slave.url;
+    }
+    console.log(req_slave.url)
 
     request(url, function (error, response, html) {
+        
+        if (!html) {
+            console.log("asd")
+            return res.status(200).send("Log server cannot be reached.");
+        }
 
         var date = req.query.date;
 
         var startingPositionOfDate = html.indexOf(date);
         if (startingPositionOfDate === -1) {
-            return res.status(404).send("Not found");
+            return res.status(200).send("No log found.");
         }
 
         var logsAsFromDate = html.substring(startingPositionOfDate, html.length - 1);
@@ -43,12 +54,10 @@ app.get('/logByDate', function (req, res) {
             return log.indexOf("HDFS_WRITE") !== -1;
         });
 
-
-
         if (error) {
             res.status(500).send(error)
         } else {
-            res.status(200).send(logsOfWrite.join("<br/>"));
+            res.status(200).send(logsOfWrite);
         }
     });
 
